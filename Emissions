@@ -1,0 +1,117 @@
+import pandas as pd
+import os
+import csv
+import sys
+import re
+
+#Directorios
+path = os.path.expanduser("G:Unidades compartidas/02_Library/Data (raw)/EDGAR/Annual_ENE/txt/World/")
+newpath = os.path.expanduser("G:Unidades compartidas/02_Library/Data (raw)/EDGAR/Annual_ENE/txt/Pruebas/")
+#VARIABLES
+#filename = 'matches.txt'
+#newf = open(os.path.join(newpath, filename), "w+")
+#LISTAS
+lista = []
+lista2 = []
+datos = []
+Columna1=[]
+Columna3=['lat','lot','lon','compound','año','Sector']
+#OBJETOS
+csvEmi = ""
+csvYear = ""
+csvSector = ""
+csvlat=""
+csvlon=""
+csvton=""
+#LINEAL
+i=0
+
+
+
+###### Loops through every element in the above array ####
+    #### opens the path where all of your  files are ####
+
+files = os.listdir(path)
+for f in files:
+    ###haces la lectura del archivo
+    openfile = open(os.path.join(path, f), 'r')
+    #recorre el contenido de los archivos
+     ## lee archivos linea por linea                    
+    for contenido in openfile:
+        #lo que trae contenido lo pasas a lista
+            lista.append(contenido)
+            #normal fo index, lo que trae index lo guarda info los numera en lista
+            for index, info in enumerate[lista]:
+                #Condicion si existe el elemento 
+                if index == 1:
+                    if "Year" in info:
+                        ## guardar en objeto
+                        separador = ";"
+                        separador2 = ":"
+                        delimitado = info.split(separador)
+                        for index2,info2 in enumerate(delimitado):
+                            if index2==0:
+                                delimitado2 = info2.split(separador2)
+                                csvEmi = delimitado2[1]
+                            if index2==2:
+                                delimitado3 = info2.split(separador2)
+                                csvYear = delimitado3[1]
+                            if index2==5:    
+                                delimitado4 = info2.split(separador2)
+                                csvSector = delimitado4[1]
+                                csvSector = re.sub("|\n","",csvSector)
+                    else:
+                        print("no cae la linea")
+                       
+                                
+                if index==2 :
+                    if "lat" in info:
+                        delimitado6 = info.split(separador)
+                        for index4, info3 in enumerate(delimitado6):
+                            if index4==0:
+                                delimitado7=info3.split(separador)
+                                cvslat=delimitado7[0]
+                            if index4==1:
+                                delimitado8=info3.split(separador)
+                                csvlon=delimitado8[0]
+                            if index4==2:
+                                csvton=info3 
+                                
+                                csvton = re.sub("emission |1970 |\(|\)|\n","",csvton)
+                    else:
+                        ("tampoco cayo la linea")
+                       
+                                
+                                 
+                if index == 3:
+                        if "Wednesday" in contenido :
+                            print("Cae1")
+                        elif  "Compound" in contenido:
+                            print("Cae")
+                        if "Lat" in contenido:
+                            print("cae3")
+                            
+                        else:
+                            delimitado9=info.split(separador)
+                            for index5, info4 in enumerate(delimitado9):
+                                if index5==0:
+                                    lat=delimitado9[0]
+                                if index5==1:
+                                    lon=delimitado9[1]
+                                if index5==2:
+                                    ton=delimitado9[2]
+                                    ton = re.sub("|\n","",ton)
+                                    with open('G:/Unidades compartidas/02_Library/Data (raw)/EDGAR/Annual_ENE/txt/Pruebas/base.txt', 'a', newline='') as csvfile:
+                                            
+                                            fieldnames = [[i, lat, lon, ton, csvEmi, csvYear, csvSector]]
+                                            i=i+1
+                                            write = csv.writer(csvfile,delimiter=";")
+                                            
+                                        
+                                            
+                                            write.writerows(fieldnames)
+                           
+                                            
+                                
+                                
+                            
