@@ -1,0 +1,97 @@
+import csv
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+import os
+import plotly.io as pio
+import kaleido
+import pandas as pd
+import xlsxwriter
+#se le de lo que se copia en el clipboard y se transforma a dataframe
+df=pd.read_clipboard()
+df=pd.DataFrame(df)
+#se quitan espacios que no sirven 
+df.drop(['Unnamed: 2','Unnamed: 5'], axis=1, inplace=True)
+#quita columnas que no queremos dentro de nuestro df
+df.drop(df[(df['Grupo de Equipo'] == 'Entrada Estacionamiento')&(df['Dirección: Evento']=='Salida')].index,inplace=True)
+df.drop(df[(df['Grupo de Equipo'] == 'Entrada Estacionamiento')&(df['Dirección: Evento']=='Entrada')].index,inplace=True)
+df.drop(df[(df['Grupo de Equipo'] == 'ENTRADA POR CASETA')&(df['Dirección: Evento']=='Salida')].index,inplace=True)
+df.drop(df[(df['Grupo de Equipo'] == 'ENTRADA POR CASETA')&(df['Dirección: Evento']=='Entrada')].index,inplace=True)
+df.drop(df[(df['Grupo de Equipo'] == 'ENTRADA POR CASETA')&(df['Dirección: Evento']=='Ambas')].index,inplace=True)
+#verificamos los datos que no tengan otro que no se ocupe
+df['Estructura Organización'].unique()
+#renombramos las columnas 
+df.rename(columns={'Matricula': 'ID'}, inplace=True)
+df.rename(columns={'Nom.': 'Nombre'}, inplace=True)
+df.rename(columns={'Fecha: Evento': 'Fecha'}, inplace=True)
+df.rename(columns={'Estructura Organización': 'Empresa'}, inplace=True)
+df.rename(columns={'Dirección: Evento': 'Evento'}, inplace=True)
+df.rename(columns={'Grupo de Equipo': 'Equipo'}, inplace=True)
+
+#buscamos cadenas de texto que queremos remplazar
+cadenas = ['Gerencia de Operaciones',
+       'Gerencia de Mantenimiento y Almacenes', 'SCANIA',
+       'Gerencia de Finanzas y Juridíco', 'Gerencia de Capital Humano',
+       'Gerencia de Contabilidad']
+
+# Realiza los reemplazos uno por uno
+for cadena in cadenas:
+    df['Empresa'] = df['Empresa'].str.replace(cadena, 'Transcomunicador')
+df['Empresa']
+
+#contabilizamos los datos por salidas y entradas
+contador_entrada = (df['Evento'] == 'Entrada').sum()
+contador_salida = (df['Evento'] == 'Salida').sum()
+print("Entradas:", contador_entrada)
+print("Salidas:", contador_salida)
+
+labels=['Entradas', 'Salidas']
+values=[contador_entrada,contador_salida]
+tot=contador_entrada+contador_salida
+print(tot)
+df2=df
+
+#imprimimos en un archivo de excel 
+with pd.ExcelWriter(f'C:/Users/SIS_JBAYLON/Documents/Accesos a comedor.xlsx') as excelfile:
+    workbook = excelfile.book
+    #datos del libro
+    sheetname='accesos'
+    df2[['ID','Nombre','Fecha','Empresa','Equipo','Evento']].to_excel(excelfile, sheet_name=sheetname,index=False)
+   
+    worksheet=excelfile.sheets[sheetname]
+    chart=workbook.add_chart({'type':'pie'})
+
+    values=[contador_entrada,contador_salida]
+    data=[['Entradas','Salidas','Total'],
+     [contador_entrada,contador_salida,tot],
+     ]
+
+    worksheet.write_column('G2',data[0])
+    worksheet.write_column('H2',data[1])
+   
+    chart.add_series({
+    'categories': '=accesos!$G$2:$G$4',
+    'values':     '=accesos!$H$2:$H$4',
+    'data_labels':{'value':True,
+                   'category':True,'position':'center',
+                'font':{'color':'#900C3F'}},
+    'points':[
+        {'fill':{'color': '#f9d422'}},
+        {'fill':{'color':'#ff6565'}},
+        {'fill':{'color':'#408ed8'}},
+    ],
+})
+    chart.set_title({'name': 'Accesos a Comedor', 'name_font': {'size':14},'name_position':'left'})
+    chart.set_rotation(270)
+    worksheet.insert_chart('J2',chart, {'x_offset':25,"y_offset":30})
+    (max_row, max_col)=df.shape
+    column_settings=[{'header':column} for column in df.columns]
+    table_style='Table Style Medium 9'
+    worksheet.add_table(0,0, max_row, max_col - 1,{'columns': column_settings,'style':table_style})
+    worksheet.set_header('&L&G',{'image_left':'C:/Users/SIS_JBAYLON/Pictures/logotrans.png'})
+    worksheet.hide_gridlines(2)
+
+
+
+
+
