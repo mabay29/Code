@@ -1,0 +1,37 @@
+import datetime
+import os
+
+# función para obtener la fecha y hora actual en el formato deseado
+def get_formatted_datetime():
+    now = datetime.datetime.now()
+    return now.strftime("%m/%d/%y,%H:%M:%S")
+
+# abrir el archivo de texto en modo "a" para añadir datos
+f = open("registro.txt", "a")
+
+while True:
+    # pedir al usuario que escanee el código de barras
+    barcode = input("Por favor, escanea el codigo de barras (introduce '25' para salir): ")
+
+    # obtener la fecha y hora actual formateada
+    current_datetime = get_formatted_datetime()
+
+    # escribir en el archivo de texto en el formato deseado
+    f.write(f"{current_datetime},08,{barcode}\n")
+    f.flush()  # asegurarse de que los datos se guarden en el búfer
+
+    # forzar la escritura de los cambios en el disco
+    os.fsync(f.fileno())
+
+    # mostrar un mensaje para confirmar que se ha guardado el dato
+    print(f"Dato guardado: {barcode}")
+
+    if barcode == "25":
+        # si el usuario introduce "25", salir del bucle y cerrar el archivo
+        break
+
+# cerrar el archivo de texto
+f.close()
+
+# mensaje de confirmación de que se ha guardado y cerrado el archivo
+print("Datos guardados en el archivo registro.txt")
